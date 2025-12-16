@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Text, View, ScrollView, Button, Modal } from 'react-native';
+import { Text, View, ScrollView, Button, Modal, Alert } from 'react-native';
 import { Card } from 'react-native-elements';
 import { connect } from 'react-redux';
 import { addToCart } from '../redux/ActionCreator';
@@ -22,7 +22,7 @@ function RenderProduct({ product, addToCart }) {
             <Card>
                 <Card.Title>{product.name}</Card.Title>
                 <Card.Divider />
-                <Card.Image source={{ uri: product.image.startsWith('http') ? product.image : baseUrl + product.image }} />
+                <Card.Image source={{ uri: product.image.startsWith('http') ? product.image : baseUrl + product.image }} style={{ resizeMode: 'center', height: 300 }} />
                 <Text style={{ margin: 10 }}>
                     {product.description}
                 </Text>
@@ -40,7 +40,10 @@ function RenderProduct({ product, addToCart }) {
                 </Text>
                 <Button
                     title="Add to Cart"
-                    onPress={() => addToCart(product)}
+                    onPress={() => {
+                        addToCart(product);
+                        Alert.alert('Added to Cart', product.name + ' added to cart successfully!');
+                    }}
                     color="#512DA8"
                 />
             </Card>

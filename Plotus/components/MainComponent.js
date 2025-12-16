@@ -10,6 +10,7 @@ import ProductDetail from './ProductDetailComponent';
 import Partner from './PartnerComponent';
 import Cart from './CartComponent';
 import Order from './OrderComponent';
+import OrderDetail from './OrderDetailComponent';
 
 const MenuNavigator = createStackNavigator();
 
@@ -30,7 +31,7 @@ function MenuNavigatorScreen() {
             <MenuNavigator.Screen
                 name="MenuScreen"
                 component={Menu}
-                options={{ title: 'Inventory Management' }}
+                options={{ title: 'Products Management' }}
             />
             <MenuNavigator.Screen
                 name="ProductDetail"
@@ -133,6 +134,11 @@ function OrderNavigatorScreen() {
                 component={Order}
                 options={{ title: 'Orders' }}
             />
+            <OrderNavigator.Screen
+                name="OrderDetail"
+                component={OrderDetail}
+                options={{ title: 'Order Detail' }}
+            />
         </OrderNavigator.Navigator>
     );
 }
@@ -157,7 +163,7 @@ function MainNavigatorScreen() {
             <MainNavigator.Screen
                 name="Menu"
                 component={MenuNavigatorScreen}
-                options={{ title: 'Inventory', drawerLabel: 'Inventory' }}
+                options={{ title: 'Products', drawerLabel: 'Products' }}
             />
             <MainNavigator.Screen
                 name="Partner"

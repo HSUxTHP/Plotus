@@ -168,7 +168,8 @@ export const postOrder = (cart) => (dispatch) => {
     const newOrder = {
         date: new Date().toISOString(),
         items: cart,
-        total: cart.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0).toFixed(2)
+        total: cart.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0).toFixed(2),
+        status: 'Processing'
     };
 
     return fetch(baseUrl + 'orders', {
@@ -192,6 +193,7 @@ export const postOrder = (cart) => (dispatch) => {
     .then(response => {
         alert('Order placed successfully!');
         dispatch(clearCart());
+        dispatch(fetchOrders());
     })
     .catch(error => {
         console.log('Post order ', error.message);
@@ -199,13 +201,73 @@ export const postOrder = (cart) => (dispatch) => {
     });
 };
 
-export const postProduct = (name, description, price, image, category) => (dispatch) => {
+export const confirmOrder = (orderId) => (dispatch) => {
+    const confirmedDate = new Date().toISOString();
+    return fetch(baseUrl + 'orders/' + orderId, {
+        method: 'PATCH',
+        body: JSON.stringify({ confirmed: true, confirmedDate: confirmedDate, status: 'Delivered' }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            return response;
+        } else {
+            var error = new Error('Error ' + response.status + ': ' + response.statusText);
+            error.response = response;
+            throw error;
+        }
+    },
+    error => { throw error; })
+    .then(response => response.json())
+    .then(response => {
+        alert('Order confirmed successfully!');
+        dispatch(fetchOrders());
+    })
+    .catch(error => {
+        console.log('Confirm order ', error.message);
+        alert('Your order could not be confirmed\nError: ' + error.message);
+    });
+};
+
+export const cancelOrder = (orderId) => (dispatch) => {
+    return fetch(baseUrl + 'orders/' + orderId, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'Cancelled' }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            return response;
+        } else {
+            var error = new Error('Error ' + response.status + ': ' + response.statusText);
+            error.response = response;
+            throw error;
+        }
+    },
+    error => { throw error; })
+    .then(response => response.json())
+    .then(response => {
+        alert('Order cancelled successfully!');
+        dispatch(fetchOrders());
+    })
+    .catch(error => {
+        console.log('Cancel order ', error.message);
+        alert('Your order could not be cancelled\nError: ' + error.message);
+    });
+};
+
+export const postProduct = (name, description, price, image, category, brand) => (dispatch) => {
     const newProduct = {
         name: name,
         description: description,
         price: price,
         image: image,
         category: category,
+        brand: brand,
         label: '',
         featured: false
     };
@@ -253,5 +315,43 @@ export const deleteProduct = (productId) => (dispatch) => {
     .catch(error => {
         console.log('Delete product ', error.message);
         alert('Your product could not be deleted\nError: ' + error.message);
+    });
+};
+
+export const updateProduct = (productId, name, description, price, image, category, brand) => (dispatch) => {
+    const updatedProduct = {
+        name: name,
+        description: description,
+        price: price,
+        image: image,
+        category: category,
+        brand: brand
+    };
+
+    return fetch(baseUrl + 'products/' + productId, {
+        method: 'PATCH',
+        body: JSON.stringify(updatedProduct),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            return response;
+        } else {
+            var error = new Error('Error ' + response.status + ': ' + response.statusText);
+            error.response = response;
+            throw error;
+        }
+    },
+    error => { throw error; })
+    .then(response => response.json())
+    .then(response => {
+        alert('Product updated successfully!');
+        dispatch(fetchProducts());
+    })
+    .catch(error => {
+        console.log('Update product ', error.message);
+        alert('Your product could not be updated\nError: ' + error.message);
     });
 };

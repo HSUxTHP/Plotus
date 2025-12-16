@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { View, FlatList, Text, ScrollView, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native';
-import { ListItem, Avatar, SearchBar, Icon, Button, Input } from 'react-native-elements';
+import { ListItem, Avatar, SearchBar, Icon, Button, Input, CheckBox } from 'react-native-elements';
 import { connect } from 'react-redux';
 import { baseUrl } from '../shared/baseUrl';
-import { deleteProduct, postProduct } from '../redux/ActionCreator';
+import { deleteProduct, postProduct, updateProduct } from '../redux/ActionCreator';
 
 const mapStateToProps = state => {
     return {
@@ -13,7 +13,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => ({
     deleteProduct: (productId) => dispatch(deleteProduct(productId)),
-    postProduct: (name, description, price, image, category) => dispatch(postProduct(name, description, price, image, category))
+    postProduct: (name, description, price, image, category, brand) => dispatch(postProduct(name, description, price, image, category, brand)),
+    updateProduct: (productId, name, description, price, image, category, brand) => dispatch(updateProduct(productId, name, description, price, image, category, brand))
 })
 
 class Menu extends Component {
@@ -22,18 +23,27 @@ class Menu extends Component {
         super(props);
         this.state = {
             search: '',
-            selectedCategory: 'All',
+            selectedBrands: [],
+            selectedCategories: [],
             showModal: false,
+            showFilterModal: false,
             name: '',
             description: '',
             price: '',
             image: 'images/product/IPhone15Pro.jpg', // Default or placeholder
-            category: 'phones'
+            category: 'phones',
+            brand: 'Apple',
+            isEditing: false,
+            editingId: null
         };
     }
 
     toggleModal() {
         this.setState({ showModal: !this.state.showModal });
+    }
+
+    toggleFilterModal() {
+        this.setState({ showFilterModal: !this.state.showFilterModal });
     }
 
     resetForm() {
@@ -43,24 +53,66 @@ class Menu extends Component {
             price: '',
             image: 'images/product/IPhone15Pro.jpg',
             category: 'phones',
-            showModal: false
+            brand: 'Apple',
+            showModal: false,
+            isEditing: false,
+            editingId: null
         });
     }
 
-    handleAddProduct() {
-        this.props.postProduct(this.state.name, this.state.description, this.state.price, this.state.image, this.state.category);
+    handleSubmitProduct() {
+        if (this.state.isEditing) {
+            this.props.updateProduct(this.state.editingId, this.state.name, this.state.description, this.state.price, this.state.image, this.state.category, this.state.brand);
+        } else {
+            this.props.postProduct(this.state.name, this.state.description, this.state.price, this.state.image, this.state.category, this.state.brand);
+        }
         this.resetForm();
+    }
+
+    openEditModal(item) {
+        this.setState({
+            name: item.name,
+            description: item.description,
+            price: item.price.toString(),
+            image: item.image,
+            category: item.category,
+            brand: item.brand || '',
+            showModal: true,
+            isEditing: true,
+            editingId: item.id
+        });
     }
 
     updateSearch = (search) => {
         this.setState({ search });
     };
 
+    toggleBrandSelection(brand) {
+        const { selectedBrands } = this.state;
+        if (selectedBrands.includes(brand)) {
+            this.setState({ selectedBrands: selectedBrands.filter(b => b !== brand) });
+        } else {
+            this.setState({ selectedBrands: [...selectedBrands, brand] });
+        }
+    }
+
+    toggleCategorySelection(category) {
+        const { selectedCategories } = this.state;
+        if (selectedCategories.includes(category)) {
+            this.setState({ selectedCategories: selectedCategories.filter(c => c !== category) });
+        } else {
+            this.setState({ selectedCategories: [...selectedCategories, category] });
+        }
+    }
+
     render() {
 
         const renderMenuItem = ({ item, index }) => {
             return (
-                <ListItem key={index} bottomDivider onPress={() => this.props.navigation.navigate('ProductDetail', { productId: item.id })}>
+                <ListItem key={index} bottomDivider 
+                    onPress={() => this.props.navigation.navigate('ProductDetail', { productId: item.id })}
+                    onLongPress={() => this.openEditModal(item)}
+                >
                     <View style={{ flexDirection: 'row', alignItems: 'center' , gap: 10, flex: 1}}>
                         <Avatar source={{ uri: item.image.startsWith('http') ? item.image : baseUrl + item.image }} />
                         <ListItem.Content>
@@ -102,65 +154,63 @@ class Menu extends Component {
             );
         }
         else {
-            // Get unique categories
-            const categories = ['All', ...new Set(this.props.products.products.map(p => p.category))];
+            // Get unique brands and categories
+            const brands = [...new Set(this.props.products.products.map(p => p.brand).filter(b => b))];
+            const categories = [...new Set(this.props.products.products.map(p => p.category).filter(c => c))];
 
             // Filter products
             const filteredProducts = this.props.products.products.filter(item => {
                 const matchesSearch = item.name.toLowerCase().includes(this.state.search.toLowerCase());
-                const matchesCategory = this.state.selectedCategory === 'All' || item.category === this.state.selectedCategory;
-                return matchesSearch && matchesCategory;
+                const matchesBrand = this.state.selectedBrands.length === 0 || this.state.selectedBrands.includes(item.brand);
+                const matchesCategory = this.state.selectedCategories.length === 0 || this.state.selectedCategories.includes(item.category);
+                return matchesSearch && matchesBrand && matchesCategory;
             });
 
             return (
                 <View style={{ flex: 1 }}>
-                    <SearchBar
-                        placeholder="Search Here..."
-                        onChangeText={this.updateSearch}
-                        value={this.state.search}
-                        lightTheme
-                        round
-                        containerStyle={{ backgroundColor: 'white', borderBottomColor: 'transparent', borderTopColor: 'transparent' }}
-                        inputContainerStyle={{ backgroundColor: '#f2f2f2' }}
-                        searchIcon={<Icon name='search' size={24} color='black' />}
-                        clearIcon={
-                            <Icon
-                                name='close'
-                                size={24}
-                                color='black'
-                                onPress={() => this.updateSearch('')}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'white' }}>
+                        <View style={{ flex: 1 }}>
+                            <SearchBar
+                                placeholder="Search Here..."
+                                onChangeText={this.updateSearch}
+                                value={this.state.search}
+                                lightTheme
+                                round
+                                containerStyle={{ backgroundColor: 'white', borderBottomColor: 'transparent', borderTopColor: 'transparent' }}
+                                inputContainerStyle={{ backgroundColor: '#f2f2f2' }}
+                                searchIcon={<Icon name='search' size={24} color='black' />}
+                                clearIcon={
+                                    <Icon
+                                        name='close'
+                                        size={24}
+                                        color='black'
+                                        onPress={() => this.updateSearch('')}
+                                    />
+                                }
                             />
-                        }
-                    />
-                    <View style={{ height: 50 }}>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 10, alignItems: 'center' }}>
-                            {categories.map((category, index) => (
-                                <TouchableOpacity
-                                    key={index}
-                                    onPress={() => this.setState({ selectedCategory: category })}
-                                    style={{
-                                        backgroundColor: this.state.selectedCategory === category ? '#512DA8' : 'white',
-                                        borderColor: '#512DA8',
-                                        borderWidth: 1,
-                                        borderRadius: 20,
-                                        paddingHorizontal: 15,
-                                        paddingVertical: 8,
-                                        marginRight: 10,
-                                        justifyContent: 'center',
-                                        alignItems: 'center'
-                                    }}
-                                >
-                                    <Text style={{
-                                        color: this.state.selectedCategory === category ? 'white' : '#512DA8',
-                                        fontSize: 12,
-                                        fontWeight: 'bold'
-                                    }}>
-                                        {category.toUpperCase()}
+                        </View>
+                        <TouchableOpacity onPress={() => this.toggleFilterModal()} style={{ paddingRight: 10 }}>
+                            <Icon name='filter-list' type='material' size={30} color='#512DA8' />
+                            {(this.state.selectedBrands.length > 0 || this.state.selectedCategories.length > 0) && (
+                                <View style={{
+                                    position: 'absolute',
+                                    right: 5,
+                                    top: -5,
+                                    backgroundColor: 'red',
+                                    borderRadius: 10,
+                                    width: 20,
+                                    height: 20,
+                                    justifyContent: 'center',
+                                    alignItems: 'center'
+                                }}>
+                                    <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>
+                                        {this.state.selectedBrands.length + this.state.selectedCategories.length}
                                     </Text>
-                                </TouchableOpacity>
-                            ))}
-                        </ScrollView>
+                                </View>
+                            )}
+                        </TouchableOpacity>
                     </View>
+                    
                     <FlatList
                         data={filteredProducts}
                         renderItem={renderMenuItem}
@@ -184,12 +234,15 @@ class Menu extends Component {
                         <Icon name='plus' type='font-awesome' color='white' />
                     </TouchableOpacity>
 
+                    {/* Add/Edit Product Modal */}
                     <Modal animationType={"slide"} transparent={false}
                         visible={this.state.showModal}
                         onDismiss={() => this.toggleModal()}
                         onRequestClose={() => this.toggleModal()}>
                         <ScrollView style={{ margin: 20 }}>
-                            <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 }}>Add New Product</Text>
+                            <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 }}>
+                                {this.state.isEditing ? 'Edit Product' : 'Add New Product'}
+                            </Text>
                             <Input
                                 placeholder='Product Name'
                                 leftIcon={<Icon type='font-awesome' name='tag' size={24} color='black' />}
@@ -208,6 +261,12 @@ class Menu extends Component {
                                 onChangeText={(price) => this.setState({ price })}
                                 value={this.state.price}
                                 keyboardType='numeric'
+                            />
+                            <Input
+                                placeholder='Brand'
+                                leftIcon={<Icon type='font-awesome' name='briefcase' size={24} color='black' />}
+                                onChangeText={(brand) => this.setState({ brand })}
+                                value={this.state.brand}
                             />
                             <Text style={{ marginLeft: 10, fontSize: 16, fontWeight: 'bold', color: 'gray' }}>Select Category:</Text>
                             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ padding: 10 }}>
@@ -237,19 +296,73 @@ class Menu extends Component {
                             />
                             <View style={{ margin: 10 }}>
                                 <Button
-                                    onPress={() => this.handleAddProduct()}
+                                    onPress={() => this.handleSubmitProduct()}
                                     color="#512DA8"
-                                    title="Add Product"
+                                    title={this.state.isEditing ? "Update Product" : "Add Product"}
                                 />
                             </View>
                             <View style={{ margin: 10 }}>
                                 <Button
-                                    onPress={() => this.toggleModal()}
+                                    onPress={() => this.resetForm()}
                                     buttonStyle={{ backgroundColor: '#808080' }}
                                     title="Cancel"
                                 />
                             </View>
                         </ScrollView>
+                    </Modal>
+
+                    {/* Filter Modal */}
+                    <Modal
+                        animationType="fade"
+                        transparent={true}
+                        visible={this.state.showFilterModal}
+                        onRequestClose={() => this.toggleFilterModal()}
+                    >
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                            <View style={{ backgroundColor: 'white', width: '80%', borderRadius: 10, padding: 20, maxHeight: '80%' }}>
+                                <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 15, textAlign: 'center' }}>Filter Products</Text>
+                                <ScrollView style={{ maxHeight: 400 }}>
+                                    <Text style={{ fontSize: 16, fontWeight: 'bold', marginLeft: 10, marginTop: 10, color: '#512DA8' }}>Brands</Text>
+                                    {brands.map((brand, index) => (
+                                        <CheckBox
+                                            key={`brand-${index}`}
+                                            title={brand}
+                                            checked={this.state.selectedBrands.includes(brand)}
+                                            onPress={() => this.toggleBrandSelection(brand)}
+                                            containerStyle={{ backgroundColor: 'transparent', borderWidth: 0, padding: 5, marginLeft: 10 }}
+                                            checkedColor='#512DA8'
+                                        />
+                                    ))}
+                                    <View style={{ height: 1, backgroundColor: '#e1e1e1', marginVertical: 10 }} />
+                                    <Text style={{ fontSize: 16, fontWeight: 'bold', marginLeft: 10, marginTop: 10, color: '#512DA8' }}>Categories</Text>
+                                    {categories.map((category, index) => (
+                                        <CheckBox
+                                            key={`cat-${index}`}
+                                            title={category}
+                                            checked={this.state.selectedCategories.includes(category)}
+                                            onPress={() => this.toggleCategorySelection(category)}
+                                            containerStyle={{ backgroundColor: 'transparent', borderWidth: 0, padding: 5, marginLeft: 10 }}
+                                            checkedColor='#512DA8'
+                                        />
+                                    ))}
+                                </ScrollView>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 20 }}>
+                                    <Button
+                                        title="Clear All"
+                                        type="outline"
+                                        onPress={() => this.setState({ selectedBrands: [], selectedCategories: [] })}
+                                        titleStyle={{ color: '#512DA8' }}
+                                        buttonStyle={{ borderColor: '#512DA8', paddingHorizontal: 20 }}
+                                    />
+                                    <Button
+                                        title="Done"
+                                        type="solid"
+                                        onPress={() => this.toggleFilterModal()}
+                                        buttonStyle={{ backgroundColor: '#512DA8', paddingHorizontal: 20 }}
+                                    />
+                                </View>
+                            </View>
+                        </View>
                     </Modal>
                 </View>
             );
