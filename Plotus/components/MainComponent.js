@@ -3,6 +3,8 @@ import { View, Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setBaseUrl } from '../shared/baseUrl';
 
 import Home from './HomeComponent';
 import Menu from './MenuComponent';
@@ -11,6 +13,7 @@ import Partner from './PartnerComponent';
 import Cart from './CartComponent';
 import Order from './OrderComponent';
 import OrderDetail from './OrderDetailComponent';
+import Settings from './SettingsComponent';
 
 const MenuNavigator = createStackNavigator();
 
@@ -143,6 +146,30 @@ function OrderNavigatorScreen() {
     );
 }
 
+const SettingsNavigator = createStackNavigator();
+
+function SettingsNavigatorScreen() {
+    return (
+        <SettingsNavigator.Navigator
+            screenOptions={{
+                headerStyle: {
+                    backgroundColor: '#512DA8'
+                },
+                headerTintColor: '#fff',
+                headerTitleStyle: {
+                    color: '#fff'
+                }
+            }}
+        >
+            <SettingsNavigator.Screen
+                name="SettingsScreen"
+                component={Settings}
+                options={{ title: 'Settings' }}
+            />
+        </SettingsNavigator.Navigator>
+    );
+}
+
 const MainNavigator = createDrawerNavigator();
 
 function MainNavigatorScreen() {
@@ -180,12 +207,40 @@ function MainNavigatorScreen() {
                 component={OrderNavigatorScreen}
                 options={{ title: 'Orders', drawerLabel: 'Orders' }}
             />
+            <MainNavigator.Screen
+                name="Settings"
+                component={SettingsNavigatorScreen}
+                options={{ title: 'Settings', drawerLabel: 'Settings' }}
+            />
         </MainNavigator.Navigator>
     );
 }
 
 class Main extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            isReady: false
+        };
+    }
+
+    async componentDidMount() {
+        try {
+            const ip = await AsyncStorage.getItem('serverIp');
+            if (ip) {
+                setBaseUrl(ip);
+            }
+        } catch (error) {
+            console.error('Failed to load IP', error);
+        } finally {
+            this.setState({ isReady: true });
+        }
+    }
+
     render() {
+        if (!this.state.isReady) {
+            return <View />;
+        }
         return (
             <View style={{ flex: 1, paddingTop: Platform.OS === 'ios' ? 0 : 0 }}>
                 <NavigationContainer>

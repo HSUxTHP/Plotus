@@ -4,6 +4,7 @@ import { ListItem, Avatar, SearchBar, Icon, Button, Input, CheckBox } from 'reac
 import { connect } from 'react-redux';
 import { baseUrl, imageUrl } from '../shared/baseUrl';
 import { deleteProduct, postProduct, updateProduct, fetchProducts } from '../redux/ActionCreator';
+import ScannerComponent from './ScannerComponent';
 
 
 const mapStateToProps = state => {
@@ -36,8 +37,13 @@ class Menu extends Component {
             category: 'phones',
             brand: 'Apple',
             isEditing: false,
-            editingId: null
+            editingId: null,
+            isScannerVisible: false
         };
+    }
+
+    handleScan = ({ type, data }) => {
+        this.setState({ isScannerVisible: false, search: data.trim() });
     }
 
     toggleModal() {
@@ -162,7 +168,9 @@ class Menu extends Component {
 
             // Filter products
             const filteredProducts = this.props.products.products.filter(item => {
-                const matchesSearch = item.name.toLowerCase().includes(this.state.search.toLowerCase());
+                const searchLower = this.state.search.toLowerCase();
+                const matchesSearch = (item.name && item.name.toLowerCase().includes(searchLower)) || 
+                                      (item.serialNumber && item.serialNumber.toLowerCase().includes(searchLower));
                 const matchesBrand = this.state.selectedBrands.length === 0 || this.state.selectedBrands.includes(item.brand);
                 const matchesCategory = this.state.selectedCategories.length === 0 || this.state.selectedCategories.includes(item.category);
                 return matchesSearch && matchesBrand && matchesCategory;
@@ -191,6 +199,9 @@ class Menu extends Component {
                                 }
                             />
                         </View>
+                        <TouchableOpacity onPress={() => this.setState({ isScannerVisible: true })} style={{ paddingRight: 10 }}>
+                            <Icon name='barcode-scan' type='material-community' size={30} color='#512DA8' />
+                        </TouchableOpacity>
                         <TouchableOpacity onPress={() => this.toggleFilterModal()} style={{ paddingRight: 10 }}>
                             <Icon name='filter-list' type='material' size={30} color='#512DA8' />
                             {(this.state.selectedBrands.length > 0 || this.state.selectedCategories.length > 0) && (
@@ -372,6 +383,11 @@ class Menu extends Component {
                             </View>
                         </View>
                     </Modal>
+                    <ScannerComponent
+                        visible={this.state.isScannerVisible}
+                        onScanned={this.handleScan}
+                        onClose={() => this.setState({ isScannerVisible: false })}
+                    />
                 </View>
             );
         }

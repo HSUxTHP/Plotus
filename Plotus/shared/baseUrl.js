@@ -1,4 +1,15 @@
-export const baseUrl = 'http://192.168.1.11:3001/';
-export const imageUrl = baseUrl + 'images/product/';
-export const partnerImageUrl = baseUrl + 'images/partner/';
-export const promotionImageUrl = baseUrl + 'images/event/';
+export let baseUrl = 'http://192.168.1.7:3001/';
+export let imageUrl = baseUrl + 'images/product/';
+export let partnerImageUrl = baseUrl + 'images/partner/';
+export let promotionImageUrl = baseUrl + 'images/event/';
+
+export const setBaseUrl = (ip) => {
+    if (ip && ip.trim() !== '') {
+        baseUrl = `http://${ip}:3001/`;
+    } else {
+        baseUrl = 'http://192.168.1.7:3001/';
+    }
+    imageUrl = baseUrl + 'images/product/';
+    partnerImageUrl = baseUrl + 'images/partner/';
+    promotionImageUrl = baseUrl + 'images/event/';
+};

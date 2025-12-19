@@ -4,10 +4,12 @@ import { ListItem, Avatar, Button, Icon } from 'react-native-elements';
 import { connect } from 'react-redux';
 import { deleteFromCart, addToCart, decreaseFromCart, postOrder } from '../redux/ActionCreator';
 import { baseUrl, imageUrl } from '../shared/baseUrl';
+import ScannerComponent from './ScannerComponent';
 
 const mapStateToProps = state => {
     return {
-        cart: state.cart
+        cart: state.cart,
+        products: state.products
     }
 }
 
@@ -19,6 +21,25 @@ const mapDispatchToProps = dispatch => ({
 })
 
 class Cart extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            isScannerVisible: false
+        };
+    }
+
+    handleScan = ({ type, data }) => {
+        this.setState({ isScannerVisible: false });
+        const scannedData = data.trim();
+        const product = this.props.products.products.find(p => p.id.toString() === scannedData || p.serialNumber === scannedData);
+        
+        if (product) {
+            this.props.addToCart(product);
+            Alert.alert('Success', `Added ${product.name} to cart!`);
+        } else {
+            Alert.alert('Error', 'Product not found!');
+        }
+    }
 
     render() {
 
@@ -77,6 +98,17 @@ class Cart extends Component {
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5' }}>
                     <Icon name='cart-off' type='material-community' size={80} color='#ccc' />
                     <Text style={{ fontSize: 20, color: 'gray', marginTop: 20 }}>Your cart is empty!</Text>
+                    <Button
+                        title="Scan Product"
+                        icon={<Icon name='barcode-scan' type='material-community' color='white' size={20} style={{ marginRight: 10 }} />}
+                        buttonStyle={{ backgroundColor: '#512DA8', marginTop: 20, paddingHorizontal: 30 }}
+                        onPress={() => this.setState({ isScannerVisible: true })}
+                    />
+                    <ScannerComponent
+                        visible={this.state.isScannerVisible}
+                        onScanned={this.handleScan}
+                        onClose={() => this.setState({ isScannerVisible: false })}
+                    />
                 </View>
             );
         }
@@ -92,6 +124,12 @@ class Cart extends Component {
 
             return (
                 <View style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
+                    <Button
+                        title="Scan Product"
+                        icon={<Icon name='barcode-scan' type='material-community' color='white' size={20} style={{ marginRight: 10 }} />}
+                        buttonStyle={{ backgroundColor: '#512DA8', margin: 10 }}
+                        onPress={() => this.setState({ isScannerVisible: true })}
+                    />
                     <FlatList
                         data={this.props.cart}
                         renderItem={renderCartItem}
@@ -136,6 +174,11 @@ class Cart extends Component {
                             }}
                         />
                     </View>
+                    <ScannerComponent
+                        visible={this.state.isScannerVisible}
+                        onScanned={this.handleScan}
+                        onClose={() => this.setState({ isScannerVisible: false })}
+                    />
                 </View>
             );
         }

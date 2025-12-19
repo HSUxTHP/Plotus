@@ -9,7 +9,7 @@ module.exports = [
     "price": "999",
     "featured": true,
     "description": "The latest iPhone with titanium design.",
-    "serialNumber": "IP15P-TITANIUM-2024",
+    "serialNumber": "1234567890001",
     "performance": "A17 Pro chip, 6-core GPU",
     "specs": "6.1-inch Super Retina XDR display, 48MP Main camera, USB-C"
   },
@@ -23,7 +23,7 @@ module.exports = [
     "price": "899",
     "featured": false,
     "description": "AI-powered smartphone from Samsung.",
-    "serialNumber": "SGS24-AI-2024",
+    "serialNumber": "1234567890002",
     "performance": "Snapdragon 8 Gen 3 for Galaxy",
     "specs": "6.2-inch Dynamic AMOLED 2X, 50MP Wide camera, 4000mAh battery"
   },
@@ -37,7 +37,7 @@ module.exports = [
     "price": "1099",
     "featured": false,
     "description": "Supercharged by M3 chip.",
-    "serialNumber": "MBA-M3-2024",
+    "serialNumber": "1234567890003",
     "performance": "Apple M3 chip, 8-core CPU, 10-core GPU",
     "specs": "13.6-inch Liquid Retina display, MagSafe 3, 1080p FaceTime HD camera"
   },
@@ -51,7 +51,7 @@ module.exports = [
     "price": "349",
     "featured": true,
     "description": "Industry-leading noise canceling headphones.",
-    "serialNumber": "SONY-XM5-NC",
+    "serialNumber": "1234567890004",
     "performance": "Integrated Processor V1, HD Noise Canceling Processor QN1",
     "specs": "30 hours battery life, Auto NC Optimizer, Crystal clear hands-free calling"
   },
@@ -65,7 +65,7 @@ module.exports = [
     "price": "1299",
     "featured": false,
     "description": "The ultimate iPad experience.",
-    "serialNumber": "IPAD-PRO-M4-2024",
+    "serialNumber": "1234567890005",
     "performance": "M4 chip, 10-core GPU",
     "specs": "13-inch Ultra Retina XDR, Apple Pencil Pro support"
   },
@@ -79,7 +79,7 @@ module.exports = [
     "price": "799",
     "featured": false,
     "description": "The AI-first phone from Google.",
-    "serialNumber": "G-PIXEL8P-2023",
+    "serialNumber": "1234567890006",
     "performance": "Google Tensor G3",
     "specs": "6.7-inch Super Actua display, 50MP main camera, 7 years of updates"
   },
@@ -93,7 +93,7 @@ module.exports = [
     "price": "499",
     "featured": true,
     "description": "Play Has No Limits.",
-    "serialNumber": "PS5-SLIM-2023",
+    "serialNumber": "1234567890007",
     "performance": "Custom AMD Zen 2 CPU, RDNA 2 GPU",
     "specs": "1TB SSD, 4K 120Hz support, DualSense controller"
   },
@@ -107,7 +107,7 @@ module.exports = [
     "price": "399",
     "featured": false,
     "description": "Incredible image quality, even better stabilization.",
-    "serialNumber": "GOPRO-H12-BLK",
+    "serialNumber": "1234567890008",
     "performance": "GP2 Processor",
     "specs": "5.3K60 video, 27MP photos, HyperSmooth 6.0"
   },
@@ -121,7 +121,7 @@ module.exports = [
     "price": "749",
     "featured": false,
     "description": "Most powerful, intelligent cordless vacuum.",
-    "serialNumber": "DYSON-V15-ABS",
+    "serialNumber": "1234567890009",
     "performance": "Hyperdymium motor, 240AW suction",
     "specs": "Laser Slim Fluffy cleaner head, Piezo sensor, 60 min run time"
   },
@@ -135,7 +135,7 @@ module.exports = [
     "price": "799",
     "featured": true,
     "description": "Next level adventure.",
-    "serialNumber": "AW-ULTRA2-TI",
+    "serialNumber": "1234567890010",
     "performance": "S9 SiP, Double tap gesture",
     "specs": "49mm Titanium Case, 3000 nits brightness, 100m water resistance"
   },
@@ -149,7 +149,7 @@ module.exports = [
     "price": "759",
     "featured": false,
     "description": "Mini to the Max.",
-    "serialNumber": "DJI-MINI4-PRO",
+    "serialNumber": "1234567890011",
     "performance": "Omnidirectional Obstacle Sensing",
     "specs": "4K/60fps HDR Video, 20km FHD Video Transmission, 34-min Flight Time"
   },
@@ -163,7 +163,7 @@ module.exports = [
     "price": "349",
     "featured": false,
     "description": "Play anytime, anywhere, with anyone.",
-    "serialNumber": "NTD-SWITCH-OLED",
+    "serialNumber": "1234567890012",
     "performance": "NVIDIA Custom Tegra processor",
     "specs": "7-inch OLED screen, 64GB internal storage, Enhanced audio"
   }
