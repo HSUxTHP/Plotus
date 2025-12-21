@@ -1,24 +1,26 @@
 import React, { Component } from 'react';
 import { View, FlatList, Text, ScrollView, StyleSheet, TouchableOpacity, Modal, Alert, RefreshControl, Image } from 'react-native';
-import { ListItem, Avatar, SearchBar, Icon, Button, Input, CheckBox } from 'react-native-elements';
+import { ListItem, Avatar, SearchBar, Icon, Button, Input, CheckBox, Badge } from 'react-native-elements';
 import { connect } from 'react-redux';
 import { baseUrl, imageUrl } from '../shared/baseUrl';
-import { deleteProduct, postProduct, updateProduct, fetchProducts } from '../redux/ActionCreator';
+import { deleteProduct, postProduct, updateProduct, fetchProducts, addToCart } from '../redux/ActionCreator';
 import ScannerComponent from './ScannerComponent';
 import * as ImagePicker from 'expo-image-picker';
 
 
 const mapStateToProps = state => {
     return {
-        products: state.products
+        products: state.products,
+        cart: state.cart
     }
 }
 
 const mapDispatchToProps = dispatch => ({
     deleteProduct: (productId) => dispatch(deleteProduct(productId)),
-    postProduct: (name, description, price, imageId, category, brand) => dispatch(postProduct(name, description, price, imageId, category, brand)),
-    updateProduct: (productId, name, description, price, imageId, category, brand) => dispatch(updateProduct(productId, name, description, price, imageId, category, brand)),
-    fetchProducts: () => dispatch(fetchProducts())
+    postProduct: (name, description, price, imageId, category, brand, quantity) => dispatch(postProduct(name, description, price, imageId, category, brand, quantity)),
+    updateProduct: (productId, name, description, price, imageId, category, brand, quantity) => dispatch(updateProduct(productId, name, description, price, imageId, category, brand, quantity)),
+    fetchProducts: () => dispatch(fetchProducts()),
+    addToCart: (product) => dispatch(addToCart(product))
 })
 
 class Menu extends Component {
@@ -31,9 +33,12 @@ class Menu extends Component {
             selectedCategories: [],
             showModal: false,
             showFilterModal: false,
+            showSortModal: false,
+            sortBy: 'name_asc',
             name: '',
             description: '',
             price: '',
+            quantity: '10',
             imageId: 0, // Default or placeholder
             image: '',
             category: 'phones',
@@ -88,11 +93,20 @@ class Menu extends Component {
         this.setState({ showFilterModal: !this.state.showFilterModal });
     }
 
+    toggleSortModal() {
+        this.setState({ showSortModal: !this.state.showSortModal });
+    }
+
+    setSort(type) {
+        this.setState({ sortBy: type, showSortModal: false });
+    }
+
     resetForm() {
         this.setState({
             name: '',
             description: '',
             price: '',
+            quantity: '10',
             imageId: 0,
             image: '',
             category: 'phones',
@@ -106,9 +120,9 @@ class Menu extends Component {
     handleSubmitProduct() {
         const imageToUse = this.state.image || this.state.imageId;
         if (this.state.isEditing) {
-            this.props.updateProduct(this.state.editingId, this.state.name, this.state.description, this.state.price, imageToUse, this.state.category, this.state.brand);
+            this.props.updateProduct(this.state.editingId, this.state.name, this.state.description, this.state.price, imageToUse, this.state.category, this.state.brand, this.state.quantity);
         } else {
-            this.props.postProduct(this.state.name, this.state.description, this.state.price, imageToUse, this.state.category, this.state.brand);
+            this.props.postProduct(this.state.name, this.state.description, this.state.price, imageToUse, this.state.category, this.state.brand, this.state.quantity);
         }
         this.resetForm();
     }
@@ -118,6 +132,7 @@ class Menu extends Component {
             name: item.name,
             description: item.description,
             price: item.price.toString(),
+            quantity: (item.quantity || 10).toString(),
             imageId: item.imageId,
             image: item.image || '',
             category: item.category,
@@ -156,19 +171,63 @@ class Menu extends Component {
             const imageSource = (item.image && (item.image.startsWith('file://') || item.image.startsWith('http'))) 
                 ? { uri: item.image } 
                 : { uri: imageUrl + item.imageId + '.jpg' };
+            
+            const stock = item.quantity !== undefined ? parseInt(item.quantity) : 0;
+            const isLowStock = stock < 5;
+            const isOutOfStock = stock === 0;
 
             return (
                 <ListItem key={index} bottomDivider 
                     onPress={() => this.props.navigation.navigate('ProductDetail', { productId: item.id })}
                     onLongPress={() => this.openEditModal(item)}
+                    containerStyle={{ opacity: isOutOfStock ? 0.6 : 1 }}
                 >
                     <View style={{ flexDirection: 'row', alignItems: 'center' , gap: 10, flex: 1}}>
-                        <Avatar source={imageSource} />
+                        <View>
+                            <Avatar source={imageSource} size="medium" />
+                            {isLowStock && !isOutOfStock && (
+                                <Badge
+                                    status="warning"
+                                    value="Low"
+                                    containerStyle={{ position: 'absolute', top: -4, right: -4 }}
+                                />
+                            )}
+                             {isOutOfStock && (
+                                <Badge
+                                    status="error"
+                                    value="Out"
+                                    containerStyle={{ position: 'absolute', top: -4, right: -4 }}
+                                />
+                            )}
+                        </View>
                         <ListItem.Content>
                             <ListItem.Title style={{ fontWeight: 'bold' }}>{item.name}</ListItem.Title>
-                            <ListItem.Subtitle numberOfLines={1}>{item.description}</ListItem.Subtitle>
-                            <ListItem.Subtitle style={{ color: '#512DA8', fontWeight: 'bold' }}>${item.price}</ListItem.Subtitle>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
+                                <ListItem.Subtitle style={{ color: '#512DA8', fontWeight: 'bold' }}>${item.price}</ListItem.Subtitle>
+                                <Text style={{ fontSize: 12, color: isLowStock ? 'red' : 'green' }}>
+                                    Stock: {stock}
+                                </Text>
+                            </View>
+                            <ListItem.Subtitle numberOfLines={1} style={{fontSize: 12, color: 'gray'}}>{item.brand} | {item.category}</ListItem.Subtitle>
                         </ListItem.Content>
+                        <TouchableOpacity 
+                            disabled={isOutOfStock}
+                            onPress={() => {
+                                const cartItem = this.props.cart.find(c => c.id === item.id);
+                                const currentCartQuantity = cartItem ? cartItem.quantity : 0;
+                                const stock = item.quantity ? parseInt(item.quantity) : 0;
+
+                                if (currentCartQuantity >= stock) {
+                                    Alert.alert('Limit Reached', 'Cannot add more than available stock');
+                                    return;
+                                }
+                                this.props.addToCart(item);
+                                Alert.alert('Added', item.name + ' added to cart');
+                            }} 
+                            style={{ marginRight: 10, opacity: isOutOfStock ? 0.3 : 1 }}
+                        >
+                            <Icon name='cart-plus' type='font-awesome' color='#512DA8' size={28} />
+                        </TouchableOpacity>
                         <TouchableOpacity onPress={() => {
                             Alert.alert(
                                 'Delete Product?',
@@ -208,13 +267,29 @@ class Menu extends Component {
             const categories = [...new Set(this.props.products.products.map(p => p.category).filter(c => c))];
 
             // Filter products
-            const filteredProducts = this.props.products.products.filter(item => {
+            let processedProducts = this.props.products.products.filter(item => {
                 const searchLower = this.state.search.toLowerCase();
                 const matchesSearch = (item.name && item.name.toLowerCase().includes(searchLower)) || 
                                       (item.serialNumber && item.serialNumber.toLowerCase().includes(searchLower));
                 const matchesBrand = this.state.selectedBrands.length === 0 || this.state.selectedBrands.includes(item.brand);
                 const matchesCategory = this.state.selectedCategories.length === 0 || this.state.selectedCategories.includes(item.category);
                 return matchesSearch && matchesBrand && matchesCategory;
+            });
+
+            // Sort products
+            processedProducts.sort((a, b) => {
+                switch (this.state.sortBy) {
+                    case 'price_asc':
+                        return parseFloat(a.price) - parseFloat(b.price);
+                    case 'price_desc':
+                        return parseFloat(b.price) - parseFloat(a.price);
+                    case 'name_asc':
+                        return a.name.localeCompare(b.name);
+                    case 'name_desc':
+                        return b.name.localeCompare(a.name);
+                    default:
+                        return 0;
+                }
             });
 
             return (
@@ -243,6 +318,12 @@ class Menu extends Component {
                         <TouchableOpacity onPress={() => this.setState({ isScannerVisible: true })} style={{ paddingRight: 10 }}>
                             <Icon name='barcode-scan' type='material-community' size={30} color='#512DA8' />
                         </TouchableOpacity>
+                        
+                        {/* Sort Button */}
+                        <TouchableOpacity onPress={() => this.toggleSortModal()} style={{ paddingRight: 10 }}>
+                            <Icon name='sort' type='material' size={30} color='#512DA8' />
+                        </TouchableOpacity>
+
                         <TouchableOpacity onPress={() => this.toggleFilterModal()} style={{ paddingRight: 10 }}>
                             <Icon name='filter-list' type='material' size={30} color='#512DA8' />
                             {(this.state.selectedBrands.length > 0 || this.state.selectedCategories.length > 0) && (
@@ -266,7 +347,7 @@ class Menu extends Component {
                     </View>
                     
                     <FlatList
-                        data={filteredProducts}
+                        data={processedProducts}
                         renderItem={renderMenuItem}
                         keyExtractor={item => item.id.toString()}
                         refreshControl={
@@ -309,18 +390,32 @@ class Menu extends Component {
                                 onChangeText={(name) => this.setState({ name })}
                                 value={this.state.name}
                             />
+                            <View style={{flexDirection: 'row'}}>
+                                <View style={{flex: 1}}>
+                                    <Input
+                                        placeholder='Price'
+                                        leftIcon={<Icon type='font-awesome' name='dollar' size={24} color='black' />}
+                                        onChangeText={(price) => this.setState({ price })}
+                                        value={this.state.price}
+                                        keyboardType='numeric'
+                                    />
+                                </View>
+                                <View style={{flex: 1}}>
+                                    <Input
+                                        placeholder='Quantity'
+                                        leftIcon={<Icon type='material-community' name='cube-outline' size={24} color='black' />}
+                                        onChangeText={(quantity) => this.setState({ quantity })}
+                                        value={this.state.quantity}
+                                        keyboardType='numeric'
+                                    />
+                                </View>
+                            </View>
+                            
                             <Input
                                 placeholder='Description'
                                 leftIcon={<Icon type='font-awesome' name='info' size={24} color='black' />}
                                 onChangeText={(description) => this.setState({ description })}
                                 value={this.state.description}
-                            />
-                            <Input
-                                placeholder='Price'
-                                leftIcon={<Icon type='font-awesome' name='dollar' size={24} color='black' />}
-                                onChangeText={(price) => this.setState({ price })}
-                                value={this.state.price}
-                                keyboardType='numeric'
                             />
                             <Input
                                 placeholder='Brand'
@@ -390,6 +485,36 @@ class Menu extends Component {
                                 />
                             </View>
                         </ScrollView>
+                    </Modal>
+
+                    {/* Sort Modal */}
+                    <Modal
+                        animationType="fade"
+                        transparent={true}
+                        visible={this.state.showSortModal}
+                        onRequestClose={() => this.toggleSortModal()}
+                    >
+                        <TouchableOpacity 
+                            style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}
+                            onPress={() => this.toggleSortModal()}
+                        >
+                            <View style={{ backgroundColor: 'white', width: '70%', borderRadius: 10, padding: 20 }}>
+                                <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 15, textAlign: 'center' }}>Sort By</Text>
+                                
+                                <TouchableOpacity onPress={() => this.setSort('name_asc')} style={{ padding: 15, borderBottomWidth: 1, borderBottomColor: '#eee' }}>
+                                    <Text style={{ color: this.state.sortBy === 'name_asc' ? '#512DA8' : 'black' }}>Name (A-Z)</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => this.setSort('name_desc')} style={{ padding: 15, borderBottomWidth: 1, borderBottomColor: '#eee' }}>
+                                    <Text style={{ color: this.state.sortBy === 'name_desc' ? '#512DA8' : 'black' }}>Name (Z-A)</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => this.setSort('price_asc')} style={{ padding: 15, borderBottomWidth: 1, borderBottomColor: '#eee' }}>
+                                    <Text style={{ color: this.state.sortBy === 'price_asc' ? '#512DA8' : 'black' }}>Price (Low to High)</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => this.setSort('price_desc')} style={{ padding: 15 }}>
+                                    <Text style={{ color: this.state.sortBy === 'price_desc' ? '#512DA8' : 'black' }}>Price (High to Low)</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </TouchableOpacity>
                     </Modal>
 
                     {/* Filter Modal */}

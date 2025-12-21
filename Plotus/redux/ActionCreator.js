@@ -164,7 +164,7 @@ export const addOrders = (orders) => ({
     payload: orders
 });
 
-export const postOrder = (orderInfo) => (dispatch) => {
+export const postOrder = (orderInfo) => (dispatch, getState) => {
     const newOrder = {
         date: new Date().toISOString(),
         items: orderInfo.cart,
@@ -194,10 +194,30 @@ export const postOrder = (orderInfo) => (dispatch) => {
     },
     error => { throw error; })
     .then(response => response.json())
-    .then(response => {
+    .then(async response => {
+        // Update stock
+        const products = getState().products.products;
+        const updatePromises = orderInfo.cart.map(item => {
+            const product = products.find(p => p.id === item.id);
+            if (product) {
+                const newQuantity = Math.max(0, parseInt(product.quantity) - item.quantity);
+                return fetch(baseUrl + 'products/' + item.id, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ quantity: newQuantity }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+            }
+            return Promise.resolve();
+        });
+
+        await Promise.all(updatePromises);
+
         alert('Order placed successfully!');
         dispatch(clearCart());
         dispatch(fetchOrders());
+        dispatch(fetchProducts());
     })
     .catch(error => {
         console.log('Post order ', error.message);
@@ -322,14 +342,15 @@ export const deleteProduct = (productId) => (dispatch) => {
     });
 };
 
-export const updateProduct = (productId, name, description, price, image, category, brand) => (dispatch) => {
+export const updateProduct = (productId, name, description, price, image, category, brand, quantity) => (dispatch) => {
     const updatedProduct = {
         name: name,
         description: description,
         price: price,
         image: image,
         category: category,
-        brand: brand
+        brand: brand,
+        quantity: quantity
     };
 
     return fetch(baseUrl + 'products/' + productId, {

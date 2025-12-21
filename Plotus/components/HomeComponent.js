@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { View, Text, ScrollView } from 'react-native';
-import { Card } from 'react-native-elements';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { Card, Button, Icon } from 'react-native-elements';
 import { connect } from 'react-redux';
 import { fetchProducts, fetchPromotions, fetchPartners } from '../redux/ActionCreator';
 import { baseUrl, imageUrl,partnerImageUrl, promotionImageUrl } from '../shared/baseUrl';
@@ -19,159 +19,11 @@ const mapDispatchToProps = dispatch => ({
     fetchPartners: () => dispatch(fetchPartners())
 })
 
-function RenderProductItem(props) {
-    const item = props.item;
 
-    if (props.isLoading) {
-        return (
-            <Card>
-                <Card.Title>Loading...</Card.Title>
-            </Card>
-        );
-    }
-    else if (props.errMess) {
-        return (
-            <Card>
-                <Card.Title>{props.errMess}</Card.Title>
-            </Card>
-        );
-    }
-    else {
-        if (item != null) {
-            const imageSource = (item.image && (item.image.startsWith('file://') || item.image.startsWith('http'))) 
-                ? { uri: item.image } 
-                : { uri: imageUrl + item.imageId + '.jpg' };
 
-            return (
-                <Card>
-                    <Card.Title>{item.name}</Card.Title>
-                    <Card.Divider />
-                    <View style={{ position: 'relative' }}>
-                        <Card.Image source={imageSource} resizeMode="contain" />
-                        {item.label ? (
-                            <View style={{
-                                position: 'absolute',
-                                top: 10,
-                                right: 10,
-                                backgroundColor: item.label === 'Sale' ? 'red' : '#512DA8',
-                                padding: 5,
-                                borderRadius: 5
-                            }}>
-                                <Text style={{ color: 'white', fontWeight: 'bold' }}>{item.label}</Text>
-                            </View>
-                        ) : null}
-                    </View>
-                    <Text style={{ margin: 10 }}>
-                        {item.description}
-                    </Text>
-                </Card>
-            );
-        }
-        else {
-            return (<View></View>);
-        }
-    }
-}
 
-function RenderPromotionItem(props) {
-    const item = props.item;
 
-    if (props.isLoading) {
-        return (
-            <Card>
-                <Card.Title>Loading...</Card.Title>
-            </Card>
-        );
-    }
-    else if (props.errMess) {
-        return (
-            <Card>
-                <Card.Title>{props.errMess}</Card.Title>
-            </Card>
-        );
-    }
-    else {
-        if (item != null) {
-            return (
-                <Card>
-                    <Card.Title>{item.name}</Card.Title>
-                    <Card.Divider />
-                    <View style={{ position: 'relative' }}>
-                        <Card.Image source={{ uri: promotionImageUrl + item.imageId + '.jpg' }} resizeMode="contain" />
-                        {item.label ? (
-                            <View style={{
-                                position: 'absolute',
-                                top: 10,
-                                right: 10,
-                                backgroundColor: item.label === 'Sale' ? 'red' : '#512DA8',
-                                padding: 5,
-                                borderRadius: 5
-                            }}>
-                                <Text style={{ color: 'white', fontWeight: 'bold' }}>{item.label}</Text>
-                            </View>
-                        ) : null}
-                    </View>
-                    <Text style={{ margin: 10 }}>
-                        {item.description}
-                    </Text>
-                </Card>
-            );
-        }
-        else {
-            return (<View></View>);
-        }
-    }
-}
 
-function RenderPartnerItem(props) {
-    const item = props.item;
-
-    if (props.isLoading) {
-        return (
-            <Card>
-                <Card.Title>Loading...</Card.Title>
-            </Card>
-        );
-    }
-    else if (props.errMess) {
-        return (
-            <Card>
-                <Card.Title>{props.errMess}</Card.Title>
-            </Card>
-        );
-    }
-    else {
-        if (item != null) {
-            return (
-                <Card>
-                    <Card.Title>{item.name}</Card.Title>
-                    <Card.Divider />
-                    <View style={{ position: 'relative' }}>
-                        <Card.Image source={{ uri: partnerImageUrl + item.imageId + '.jpg' }} resizeMode="contain" />
-                        {item.label ? (
-                            <View style={{
-                                position: 'absolute',
-                                top: 10,
-                                right: 10,
-                                backgroundColor: item.label === 'Sale' ? 'red' : '#512DA8',
-                                padding: 5,
-                                borderRadius: 5
-                            }}>
-                                <Text style={{ color: 'white', fontWeight: 'bold' }}>{item.label}</Text>
-                            </View>
-                        ) : null}
-                    </View>
-                    <Text style={{ margin: 10 }}>
-                        {item.description}
-                    </Text>
-                </Card>
-            );
-        }
-        else {
-            return (<View></View>);
-        }
-    }
-}
 
 class Home extends Component {
 
@@ -183,19 +35,114 @@ class Home extends Component {
 
     render() {
         return (
-            <ScrollView style={{ paddingBottom: 24 }}>
-                <RenderProductItem item={this.props.products.products.filter((product) => product.featured)[0]}
-                    isLoading={this.props.products.isLoading}
-                    errMess={this.props.products.errMess} />
-                <RenderPromotionItem item={this.props.promotions.promotions.filter((promo) => promo.featured)[0]}
-                    isLoading={this.props.promotions.isLoading}
-                    errMess={this.props.promotions.errMess} />
-                <RenderPartnerItem item={this.props.partners.partners.filter((partner) => partner.featured)[0]}
-                    isLoading={this.props.partners.isLoading}
-                    errMess={this.props.partners.errMess} />
+            <ScrollView contentContainerStyle={styles.container}>
+                <View style={styles.headerContainer}>
+                    <Text style={styles.headerText}>Sales Dashboard</Text>
+                </View>
+                
+                <View style={styles.gridContainer}>
+                    <View style={styles.gridItem}>
+                        <Button
+                            title="New Order"
+                            icon={<Icon name='cart-plus' type='font-awesome' color='white' size={40} />}
+                            buttonStyle={styles.button}
+                            titleStyle={styles.buttonTitle}
+                            onPress={() => this.props.navigation.navigate('Cart')}
+                        />
+                    </View>
+                    <View style={styles.gridItem}>
+                        <Button
+                            title="Products"
+                            icon={<Icon name='list' type='font-awesome' color='white' size={40} />}
+                            buttonStyle={styles.button}
+                            titleStyle={styles.buttonTitle}
+                            onPress={() => this.props.navigation.navigate('Menu')}
+                        />
+                    </View>
+                    <View style={styles.gridItem}>
+                        <Button
+                            title="History"
+                            icon={<Icon name='history' type='font-awesome' color='white' size={40} />}
+                            buttonStyle={styles.button}
+                            titleStyle={styles.buttonTitle}
+                            onPress={() => this.props.navigation.navigate('Order')}
+                        />
+                    </View>
+                    <View style={styles.gridItem}>
+                        <Button
+                            title="Partners"
+                            icon={<Icon name='users' type='font-awesome' color='white' size={40} />}
+                            buttonStyle={styles.button}
+                            titleStyle={styles.buttonTitle}
+                            onPress={() => this.props.navigation.navigate('Partner')}
+                        />
+                    </View>
+                </View>
+
+                <Card>
+                    <Card.Title>Quick Stats</Card.Title>
+                    <Card.Divider/>
+                    <View style={styles.statsRow}>
+                        <Text>Total Products:</Text>
+                        <Text style={{fontWeight: 'bold'}}>{this.props.products.products.length}</Text>
+                    </View>
+                    <View style={styles.statsRow}>
+                        <Text>Total Partners:</Text>
+                        <Text style={{fontWeight: 'bold'}}>{this.props.partners.partners.length}</Text>
+                    </View>
+                </Card>
             </ScrollView>
         );
     }
 }
+
+const styles = StyleSheet.create({
+    container: {
+        paddingBottom: 20,
+        backgroundColor: '#f5f5f5',
+        flexGrow: 1
+    },
+    headerContainer: {
+        padding: 20,
+        backgroundColor: '#fff',
+        marginBottom: 10,
+        alignItems: 'center',
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd'
+    },
+    headerText: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#512DA8'
+    },
+    gridContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        padding: 5
+    },
+    gridItem: {
+        width: '45%',
+        margin: 5
+    },
+    button: {
+        backgroundColor: '#512DA8',
+        height: 120,
+        flexDirection: 'column',
+        justifyContent: 'center',
+        borderRadius: 10,
+        elevation: 5
+    },
+    buttonTitle: {
+        marginTop: 10,
+        fontSize: 16,
+        fontWeight: 'bold'
+    },
+    statsRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginVertical: 5
+    }
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(Home);

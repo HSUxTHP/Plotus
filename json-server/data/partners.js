@@ -1,30 +1,44 @@
 module.exports = [
   {
     "id": 0,
-    "name": "Apple",
+    "name": "Apple Inc.",
     "imageId": 0,
-    "featured": false,
-    "description": "Think Different."
+    "featured": true,
+    "description": "Authorized Reseller & Service Provider."
   },
   {
     "id": 1,
-    "name": "Samsung",
+    "name": "Samsung Electronics",
     "imageId": 1,
-    "featured": false,
-    "description": "Inspire the World, Create the Future."
+    "featured": true,
+    "description": "Global Partner for Mobile & Home Appliances."
   },
   {
     "id": 2,
-    "name": "Sony",
+    "name": "Sony Corporation",
     "imageId": 2,
     "featured": false,
-    "description": "Be Moved."
+    "description": "Premium Audio & Gaming Partner."
   },
   {
     "id": 3,
     "name": "Google",
     "imageId": 3,
-    "featured": true,
-    "description": "Don't be evil."
+    "featured": false,
+    "description": "Official Retailer for Pixel & Nest."
+  },
+  {
+    "id": 4,
+    "name": "Logistics Express",
+    "imageId": 4,
+    "featured": false,
+    "description": "Our trusted delivery partner for nationwide shipping."
+  },
+  {
+    "id": 5,
+    "name": "TechSupply Co.",
+    "imageId": 5,
+    "featured": false,
+    "description": "Main distributor for accessories and peripherals."
   }
 ];

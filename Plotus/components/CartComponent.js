@@ -39,6 +39,15 @@ class Cart extends Component {
         const product = this.props.products.products.find(p => p.id.toString() === scannedData || p.serialNumber === scannedData);
         
         if (product) {
+            const cartItem = this.props.cart.find(c => c.id === product.id);
+            const currentQty = cartItem ? cartItem.quantity : 0;
+            const stock = parseInt(product.quantity);
+
+            if (currentQty >= stock) {
+                 Alert.alert('Error', 'Stock limit reached');
+                 return;
+            }
+
             this.props.addToCart(product);
             Alert.alert('Success', `Added ${product.name} to cart!`);
         } else {
@@ -67,7 +76,16 @@ class Cart extends Component {
                                     <Icon name='minus-circle-outline' type='material-community' color='#512DA8' size={30} />
                                 </TouchableOpacity>
                                 <Text style={{ marginHorizontal: 10, fontSize: 18, fontWeight: 'bold' }}>{item.quantity}</Text>
-                                <TouchableOpacity onPress={() => this.props.addToCart(item)}>
+                                <TouchableOpacity onPress={() => {
+                                    const productInStore = this.props.products.products.find(p => p.id === item.id);
+                                    const stock = productInStore ? parseInt(productInStore.quantity) : 0;
+                                    
+                                    if (item.quantity >= stock) {
+                                        Alert.alert('Limit Reached', 'Cannot add more than available stock');
+                                        return;
+                                    }
+                                    this.props.addToCart(item);
+                                }}>
                                     <Icon name='plus-circle-outline' type='material-community' color='#512DA8' size={30} />
                                 </TouchableOpacity>
                             </View>

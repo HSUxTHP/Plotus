@@ -3,6 +3,15 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Input, Button } from 'react-native-elements';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setBaseUrl } from '../shared/baseUrl';
+import { connect } from 'react-redux';
+import { fetchProducts, fetchPromotions, fetchPartners, fetchOrders } from '../redux/ActionCreator';
+
+const mapDispatchToProps = dispatch => ({
+    fetchProducts: () => dispatch(fetchProducts()),
+    fetchPromotions: () => dispatch(fetchPromotions()),
+    fetchPartners: () => dispatch(fetchPartners()),
+    fetchOrders: () => dispatch(fetchOrders())
+});
 
 class Settings extends Component {
     constructor(props) {
@@ -27,7 +36,13 @@ class Settings extends Component {
         try {
             await AsyncStorage.setItem('serverIp', this.state.ip);
             setBaseUrl(this.state.ip);
-            alert('IP Saved!');
+            
+            this.props.fetchProducts();
+            this.props.fetchPromotions();
+            this.props.fetchPartners();
+            this.props.fetchOrders();
+
+            alert('IP Saved & Data Refreshed!');
         } catch (error) {
             console.error('Failed to save IP', error);
         }
@@ -71,4 +86,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default Settings;
+export default connect(null, mapDispatchToProps)(Settings);

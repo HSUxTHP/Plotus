@@ -63,7 +63,7 @@ function HomeNavigatorScreen() {
             <HomeNavigator.Screen
                 name="HomeScreen"
                 component={Home}
-                options={{ title: 'Home' }}
+                options={{ title: 'Dashboard' }}
             />
         </HomeNavigator.Navigator>
     );
@@ -111,7 +111,7 @@ function CartNavigatorScreen() {
             <CartNavigator.Screen
                 name="CartScreen"
                 component={Cart}
-                options={{ title: 'My Cart' }}
+                options={{ title: 'New Order' }}
             />
         </CartNavigator.Navigator>
     );
@@ -185,27 +185,27 @@ function MainNavigatorScreen() {
             <MainNavigator.Screen
                 name="Home"
                 component={HomeNavigatorScreen}
-                options={{ title: 'Home', drawerLabel: 'Home' }}
+                options={{ title: 'Dashboard', drawerLabel: 'Dashboard' }}
+            />
+            <MainNavigator.Screen
+                name="Cart"
+                component={CartNavigatorScreen}
+                options={{ title: 'New Order', drawerLabel: 'New Order' }}
             />
             <MainNavigator.Screen
                 name="Menu"
                 component={MenuNavigatorScreen}
-                options={{ title: 'Products', drawerLabel: 'Products' }}
+                options={{ title: 'Products Catalog', drawerLabel: 'Products Catalog' }}
+            />
+            <MainNavigator.Screen
+                name="Order"
+                component={OrderNavigatorScreen}
+                options={{ title: 'Order History', drawerLabel: 'Order History' }}
             />
             <MainNavigator.Screen
                 name="Partner"
                 component={PartnerNavigatorScreen}
                 options={{ title: 'Partners', drawerLabel: 'Partners' }}
-            />
-            <MainNavigator.Screen
-                name="Cart"
-                component={CartNavigatorScreen}
-                options={{ title: 'My Cart', drawerLabel: 'My Cart' }}
-            />
-            <MainNavigator.Screen
-                name="Order"
-                component={OrderNavigatorScreen}
-                options={{ title: 'Orders', drawerLabel: 'Orders' }}
             />
             <MainNavigator.Screen
                 name="Settings"
