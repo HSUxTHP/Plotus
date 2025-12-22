@@ -13,14 +13,27 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_CALENDAR",
+        "android.permission.WRITE_CALENDAR"
+      ],
+      "usesCleartextTraffic": true,
+      "package": "com.tamekhanh.Plotus"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -38,7 +51,13 @@
           "calendarPermission": "Allow $(PRODUCT_NAME) to access your calendar"
         }
       ],
-      "expo-notifications"
-    ]
+      "expo-notifications",
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "2a2d4d06-69bb-4943-9435-80d7d8fbe1ac"
+      }
+    }
   }
 }

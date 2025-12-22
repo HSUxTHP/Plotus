@@ -34,8 +34,14 @@ class Settings extends Component {
 
     saveIp = async () => {
         try {
-            await AsyncStorage.setItem('serverIp', this.state.ip);
-            setBaseUrl(this.state.ip);
+            let ip = this.state.ip.trim();
+            // Remove http:// or https:// if present
+            ip = ip.replace(/^https?:\/\//, '');
+            // Remove trailing slash if present
+            ip = ip.replace(/\/$/, '');
+            
+            await AsyncStorage.setItem('serverIp', ip);
+            setBaseUrl(ip);
             
             this.props.fetchProducts();
             this.props.fetchPromotions();
