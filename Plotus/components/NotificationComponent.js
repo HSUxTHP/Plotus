@@ -62,14 +62,31 @@ class Notification extends Component {
                     notes: notification.message
                 });
 
+                // Immediate notification
                 await Notifications.scheduleNotificationAsync({
                     content: {
-                        title: notification.title,
-                        body: notification.message,
+                        title: "Added to Calendar",
+                        body: `Event "${notification.title}" has been added to your calendar.`,
                         sound: true
                     },
-                    trigger: startDate.getTime() > Date.now() ? { date: startDate } : null
+                    trigger: null,
                 });
+
+                const triggerSeconds = (startDate.getTime() - Date.now()) / 1000;
+
+                if (triggerSeconds > 0) {
+                    await Notifications.scheduleNotificationAsync({
+                        content: {
+                            title: notification.title,
+                            body: notification.message,
+                            sound: true
+                        },
+                        trigger: {
+                            type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+                            seconds: Math.max(1, Math.round(triggerSeconds)),
+                        }
+                    });
+                }
 
                 Alert.alert('Success', 'Notification added to your calendar');
             } catch (error) {
