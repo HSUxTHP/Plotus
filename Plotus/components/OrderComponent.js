@@ -107,7 +107,7 @@ class Order extends Component {
                     >
                         <View style={styles.modal}>
                             <Text style={styles.modalTitle}>Filter Status</Text>
-                            {['All', 'Processing', 'Delivered', 'Cancelled'].map(status => (
+                            {['All', 'Completed', 'Cancelled'].map(status => (
                                 <CheckBox
                                     key={status}
                                     title={status}

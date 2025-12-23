@@ -100,7 +100,7 @@ class OrderDetail extends Component {
                             <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#512DA8' }}>${total.toFixed(2)}</Text>
                         </View>
                     </View>
-                    {status === 'Processing' && (
+                    {status === 'Completed' && (
                         <View>
                             {order.paymentMethod === 'Bank Transfer' && (
                                 <Button
@@ -110,21 +110,6 @@ class OrderDetail extends Component {
                                     onPress={() => this.setState({ isQRModalVisible: true })}
                                 />
                             )}
-                            <Button
-                                title="Confirm Order"
-                                buttonStyle={{ backgroundColor: '#512DA8', marginTop: 10 }}
-                                onPress={() => {
-                                    Alert.alert(
-                                        'Confirm Order',
-                                        'Are you sure you want to confirm this order?',
-                                        [
-                                            { text: 'Cancel', style: 'cancel' },
-                                            { text: 'OK', onPress: () => this.props.confirmOrder(order.id) }
-                                        ],
-                                        { cancelable: false }
-                                    );
-                                }}
-                            />
                             <Button
                                 title="Cancel Order"
                                 buttonStyle={{ backgroundColor: 'red', marginTop: 10 }}

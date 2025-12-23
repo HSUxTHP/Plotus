@@ -9,7 +9,7 @@ module.exports = [
     "price": "1199",
     "featured": true,
     "description": "Titanium design, A17 Pro chip, our longest optical zoom in iPhone ever.",
-    "serialNumber": "1234567890001",
+    "serialNumber": "0000000000",
     "performance": "A17 Pro chip",
     "specs": "6.7-inch Super Retina XDR, 1TB Storage",
     "quantity": 45
@@ -24,7 +24,7 @@ module.exports = [
     "price": "1299",
     "featured": true,
     "description": "Galaxy AI is here. Welcome to the era of mobile AI.",
-    "serialNumber": "1234567890002",
+    "serialNumber": "0000000001",
     "performance": "Snapdragon 8 Gen 3",
     "specs": "6.8-inch QHD+, S Pen included",
     "quantity": 12
@@ -39,7 +39,7 @@ module.exports = [
     "price": "1299",
     "featured": false,
     "description": "Lean. Mean. M3 machine.",
-    "serialNumber": "1234567890003",
+    "serialNumber": "0000000002",
     "performance": "M3 Chip (8-core CPU, 10-core GPU)",
     "specs": "15.3-inch Liquid Retina, 16GB RAM, 512GB SSD",
     "quantity": 3

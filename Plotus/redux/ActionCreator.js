@@ -177,7 +177,7 @@ export const postOrder = (orderInfo) => (dispatch, getState) => {
         deliveryMethod: orderInfo.deliveryMethod,
         address: orderInfo.address,
         deliveryFee: orderInfo.deliveryFee,
-        status: 'Commplete'
+        status: 'Completed'
     };
 
     return fetch(baseUrl + 'orders', {
@@ -233,7 +233,7 @@ export const confirmOrder = (orderId) => (dispatch) => {
     const confirmedDate = new Date().toISOString();
     return fetch(baseUrl + 'orders/' + orderId, {
         method: 'PATCH',
-        body: JSON.stringify({ confirmed: true, confirmedDate: confirmedDate, status: 'Commplete' }),
+        body: JSON.stringify({ confirmed: true, confirmedDate: confirmedDate, status: 'Completed' }),
         headers: {
             'Content-Type': 'application/json'
         }
@@ -259,7 +259,7 @@ export const confirmOrder = (orderId) => (dispatch) => {
     });
 };
 
-export const cancelOrder = (orderId) => (dispatch) => {
+export const cancelOrder = (orderId) => (dispatch, getState) => {
     return fetch(baseUrl + 'orders/' + orderId, {
         method: 'PATCH',
         body: JSON.stringify({ status: 'Cancelled' }),
@@ -278,7 +278,27 @@ export const cancelOrder = (orderId) => (dispatch) => {
     },
     error => { throw error; })
     .then(response => response.json())
-    .then(response => {
+    .then(async response => {
+        const order = getState().orders.orders.find(order => order.id === orderId);
+        if (order && order.items) {
+            const products = getState().products.products;
+            const updatePromises = order.items.map(item => {
+                const product = products.find(p => p.id === item.id);
+                if (product) {
+                    const newQuantity = parseInt(product.quantity) + item.quantity;
+                    return fetch(baseUrl + 'products/' + item.id, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ quantity: newQuantity }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                }
+                return Promise.resolve();
+            });
+            await Promise.all(updatePromises);
+            dispatch(fetchProducts());
+        }
         alert('Order cancelled successfully!');
         dispatch(fetchOrders());
     })

@@ -38,7 +38,7 @@ class Menu extends Component {
             name: '',
             description: '',
             price: '',
-            quantity: '10',
+            quantity: '0',
             imageId: 0, // Default or placeholder
             image: '',
             category: 'phones',
@@ -106,7 +106,7 @@ class Menu extends Component {
             name: '',
             description: '',
             price: '',
-            quantity: '10',
+            quantity: '0',
             imageId: 0,
             image: '',
             category: 'phones',
@@ -118,7 +118,7 @@ class Menu extends Component {
     }
 
     handleSubmitProduct() {
-        const imageToUse = this.state.image || this.state.imageId;
+        const imageToUse = this.state.image;
         if (this.state.isEditing) {
             this.props.updateProduct(this.state.editingId, this.state.name, this.state.description, this.state.price, imageToUse, this.state.category, this.state.brand, this.state.quantity);
         } else {
@@ -127,12 +127,28 @@ class Menu extends Component {
         this.resetForm();
     }
 
+    openAddModal() {
+        this.setState({
+            name: '',
+            description: '',
+            price: '',
+            quantity: '0',
+            imageId: 0,
+            image: '',
+            category: 'phones',
+            brand: 'Apple',
+            showModal: true,
+            isEditing: false,
+            editingId: null
+        });
+    }
+
     openEditModal(item) {
         this.setState({
             name: item.name,
             description: item.description,
             price: item.price.toString(),
-            quantity: (item.quantity || 10).toString(),
+            quantity: (item.quantity !== undefined && item.quantity !== null ? item.quantity : 10).toString(),
             imageId: item.imageId,
             image: item.image || '',
             category: item.category,
@@ -370,7 +386,7 @@ class Menu extends Component {
                             alignItems: 'center',
                             elevation: 5
                         }}
-                        onPress={() => this.toggleModal()}
+                        onPress={() => this.openAddModal()}
                     >
                         <Icon name='plus' type='font-awesome' color='white' />
                     </TouchableOpacity>
@@ -390,26 +406,13 @@ class Menu extends Component {
                                 onChangeText={(name) => this.setState({ name })}
                                 value={this.state.name}
                             />
-                            <View style={{flexDirection: 'row'}}>
-                                <View style={{flex: 1}}>
-                                    <Input
-                                        placeholder='Price'
-                                        leftIcon={<Icon type='font-awesome' name='dollar' size={24} color='black' />}
-                                        onChangeText={(price) => this.setState({ price })}
-                                        value={this.state.price}
-                                        keyboardType='numeric'
-                                    />
-                                </View>
-                                <View style={{flex: 1}}>
-                                    <Input
-                                        placeholder='Quantity'
-                                        leftIcon={<Icon type='material-community' name='cube-outline' size={24} color='black' />}
-                                        onChangeText={(quantity) => this.setState({ quantity })}
-                                        value={this.state.quantity}
-                                        keyboardType='numeric'
-                                    />
-                                </View>
-                            </View>
+                            <Input
+                                placeholder='Price'
+                                leftIcon={<Icon type='font-awesome' name='dollar' size={24} color='black' />}
+                                onChangeText={(price) => this.setState({ price })}
+                                value={this.state.price}
+                                keyboardType='numeric'
+                            />
                             
                             <Input
                                 placeholder='Description'
@@ -462,14 +465,13 @@ class Menu extends Component {
                                 <View style={{ alignItems: 'center', marginBottom: 10 }}>
                                     <Image source={{ uri: this.state.image }} style={{ width: 200, height: 200 }} />
                                 </View>
-                            ) : null}
+                            ) : (this.state.imageId ? (
+                                <View style={{ alignItems: 'center', marginBottom: 10 }}>
+                                    <Image source={{ uri: imageUrl + this.state.imageId + '.jpg' }} style={{ width: 200, height: 200 }} />
+                                </View>
+                            ) : null)}
 
-                            <Input
-                                placeholder='Image URL (relative or absolute)'
-                                leftIcon={<Icon type='font-awesome' name='image' size={24} color='black' />}
-                                onChangeText={(image) => this.setState({ image })}
-                                value={this.state.image}
-                            />
+
                             <View style={{ margin: 10 }}>
                                 <Button
                                     onPress={() => this.handleSubmitProduct()}
